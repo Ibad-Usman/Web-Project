@@ -10,6 +10,10 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    public function bookings()
+{
+    return $this->hasMany(Booking::class);
+}
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
