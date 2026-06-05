@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Booking</title>
+    <title>Book Property</title>
     <style>
         * {
             margin: 0;
@@ -128,14 +128,24 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .current-dates {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-            padding: 12px;
+        .property-info {
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 13px;
+            margin-bottom: 30px;
+            border-left: 3px solid #667eea;
+        }
+
+        .property-info h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .property-info p {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 5px;
         }
 
         .price-preview {
@@ -229,10 +239,10 @@
     </nav>
 
     <div class="container">
-        <a href="{{ route('bookings.show', $booking->id) }}" class="back-link">← Back to Booking Details</a>
+        <a href="{{ route('properties.show', $property->id) }}" class="back-link">← Back to Property</a>
 
         <div class="form-card">
-            <h1 class="form-title">Edit Booking</h1>
+            <h1 class="form-title">Complete Your Booking</h1>
 
             @if($errors->any())
                 <div class="alert-error">
@@ -244,42 +254,44 @@
                 </div>
             @endif
 
-            <div class="current-dates">
-                <strong>Current Dates:</strong> {{ $booking->check_in_date->format('M d, Y') }} to {{ $booking->check_out_date->format('M d, Y') }}
+            <div class="property-info">
+                <h3>{{ $property->name }}</h3>
+                <p>📍 {{ $property->location }}</p>
+                <p>💰 ${{ number_format($property->price_per_night, 2) }} per night</p>
             </div>
 
-            <form method="POST" action="{{ route('bookings.update', $booking->id) }}">
+            <form method="POST" action="{{ route('bookings.store') }}">
                 @csrf
-                @method('PUT')
+                <input type="hidden" name="property_id" value="{{ $property->id }}">
 
                 <div class="form-group">
                     <label for="check_in_date">Check-in Date</label>
-                    <input type="date" id="check_in_date" name="check_in_date" value="{{ old('check_in_date', $booking->check_in_date->toDateString()) }}" min="{{ now()->toDateString() }}" required>
+                    <input type="date" id="check_in_date" name="check_in_date" value="{{ old('check_in_date') }}" min="{{ now()->toDateString() }}" required>
                 </div>
 
                 <div class="form-group">
                     <label for="check_out_date">Check-out Date</label>
-                    <input type="date" id="check_out_date" name="check_out_date" value="{{ old('check_out_date', $booking->check_out_date->toDateString()) }}" min="{{ now()->toDateString() }}" required>
+                    <input type="date" id="check_out_date" name="check_out_date" value="{{ old('check_out_date') }}" min="{{ now()->toDateString() }}" required>
                 </div>
 
                 <div class="price-preview">
                     <div class="price-row">
                         <span>Nightly rate:</span>
-                        <span>${{ number_format($booking->property->price_per_night, 2) }}</span>
+                        <span>${{ number_format($property->price_per_night, 2) }}</span>
                     </div>
                     <div class="price-row">
-                        <span id="nights-text">{{ $booking->nights }} night(s):</span>
-                        <span id="nights-price">${{ number_format($booking->total_price, 2) }}</span>
+                        <span id="nights-text">0 nights:</span>
+                        <span id="nights-price">$0.00</span>
                     </div>
                     <div class="price-row total">
-                        <span>Updated Total:</span>
-                        <span id="total-price">${{ number_format($booking->total_price, 2) }}</span>
+                        <span>Total Price:</span>
+                        <span id="total-price">$0.00</span>
                     </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-submit">Save Changes</button>
-                    <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-cancel">Cancel</a>
+                    <button type="submit" class="btn btn-submit">Complete Booking</button>
+                    <a href="{{ route('properties.show', $property->id) }}" class="btn btn-cancel">Cancel</a>
                 </div>
             </form>
         </div>
@@ -288,7 +300,7 @@
     <script>
         const checkInInput = document.getElementById('check_in_date');
         const checkOutInput = document.getElementById('check_out_date');
-        const pricePerNight = {{ $booking->property->price_per_night }};
+        const pricePerNight = {{ $property->price_per_night }};
 
         function calculatePrice() {
             if (checkInInput.value && checkOutInput.value) {
