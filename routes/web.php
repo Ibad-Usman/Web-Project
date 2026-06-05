@@ -52,20 +52,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('destroy');
     });
 
-    // Bookings
+    // Bookings - IMPORTANT: Define /create/{property_id} BEFORE /{id} to avoid route conflicts
     Route::prefix('bookings')->name('bookings.')->group(function () {
         Route::get('/', [BookingController::class, 'index'])
             ->name('index');
 
+        // Create booking - MUST be before /{id} to prevent {id} from catching 'create'
         Route::get('/create/{property_id}', [BookingController::class, 'create'])
             ->name('create');
 
         Route::post('/', [BookingController::class, 'store'])
             ->name('store');
 
+        // Show booking details
         Route::get('/{id}', [BookingController::class, 'show'])
             ->name('show');
 
+        // Edit booking - MUST be before final /{id} routes
         Route::get('/{id}/edit', [BookingController::class, 'edit'])
             ->name('edit');
 
