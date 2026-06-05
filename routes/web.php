@@ -6,42 +6,88 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\BookingController;
 
+// Home page - redirects based on auth status
 Route::get('/', function () {
-    return redirect('/dashboard');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('home');
+
+// Public routes - accessible without login
+Route::middleware('guest')->group(function () {
+    Route::get('/welcome', function () {
+        return view('welcome');
+    })->name('welcome');
 });
 
-Route::middleware(['auth'])->group(function () {
+// Authenticated routes - only accessible when logged in
+Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // Properties
-    Route::get('/properties', [PropertyController::class, 'index'])
-        ->name('properties.index');
+    Route::prefix('properties')->name('properties.')->group(function () {
+        Route::get('/', [PropertyController::class, 'index'])
+            ->name('index');
 
-    Route::get('/properties/{id}', [PropertyController::class, 'show'])
-        ->name('properties.show');
+        Route::get('/create', [PropertyController::class, 'create'])
+            ->name('create');
+
+        Route::post('/', [PropertyController::class, 'store'])
+            ->name('store');
+
+        Route::get('/{id}', [PropertyController::class, 'show'])
+            ->name('show');
+
+        Route::get('/{id}/edit', [PropertyController::class, 'edit'])
+            ->name('edit');
+
+        Route::put('/{id}', [PropertyController::class, 'update'])
+            ->name('update');
+
+        Route::delete('/{id}', [PropertyController::class, 'destroy'])
+            ->name('destroy');
+    });
 
     // Bookings
-    Route::get('/my-bookings', [BookingController::class, 'index'])
-        ->name('bookings.index');
+    Route::prefix('bookings')->name('bookings.')->group(function () {
+        Route::get('/', [BookingController::class, 'index'])
+            ->name('index');
 
-    Route::get('/book/{id}', [BookingController::class, 'create'])
-        ->name('bookings.create');
+        Route::get('/create/{property_id}', [BookingController::class, 'create'])
+            ->name('create');
 
-    Route::post('/book', [BookingController::class, 'store'])
-        ->name('bookings.store');
+        Route::post('/', [BookingController::class, 'store'])
+            ->name('store');
+
+        Route::get('/{id}', [BookingController::class, 'show'])
+            ->name('show');
+
+        Route::get('/{id}/edit', [BookingController::class, 'edit'])
+            ->name('edit');
+
+        Route::put('/{id}', [BookingController::class, 'update'])
+            ->name('update');
+
+        Route::delete('/{id}', [BookingController::class, 'destroy'])
+            ->name('destroy');
+    });
 
     // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'edit'])
+            ->name('edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+        Route::patch('/', [ProfileController::class, 'update'])
+            ->name('update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+        Route::delete('/', [ProfileController::class, 'destroy'])
+            ->name('destroy');
+    });
 });
 
+// Authentication routes (login, register, password reset)
 require __DIR__.'/auth.php';
